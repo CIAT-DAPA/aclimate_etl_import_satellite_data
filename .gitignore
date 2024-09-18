@@ -2,3 +2,4 @@ downloadedData
 output
 venv
 src/downloadedData/__pycache__
+__pycache__
