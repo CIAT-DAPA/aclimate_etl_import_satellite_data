@@ -3,6 +3,7 @@ import argparse
 from tools import Tools
 from chirps_data import ChirpsData
 from era5_data import Era5Data
+from geoserver_upload import UploadGeoserver
 
 
 def main():
@@ -13,7 +14,7 @@ def main():
     parser.add_argument("-s", "--startDate", help="Start date to download example: 2024-07", required=True)
     parser.add_argument("-e", "--endDate", help="End date to download example: 2024-09", required=True)
     parser.add_argument("-c", "--country", help="Country", required=True)
-    parser.add_argument("-w", "--worskpace", help="Geoserver worskpace", required=True)
+    parser.add_argument("-w", "--workspace", help="Geoserver workspace", required=True)
 
 
     args = parser.parse_args()
@@ -29,12 +30,16 @@ def main():
     
     country = args.country
 
+    workspace = args.workspace
+
     cd = ChirpsData(output_path, country, start_date, end_date)
     cd.main()
 
     e5 = Era5Data(output_path, country, start_date, end_date)
     e5.main()
 
+    geo = UploadGeoserver(output_path, country, start_date, end_date, workspace)
+    geo.main()
 
 if __name__ == "__main__":
     main()
