@@ -7,7 +7,7 @@ from geoserver_conexion.tool import GeoserverClient
 class GeoserverImport():
 
     def __init__(self, workspace, user, passw, geo_url):
-        self.geo_url = geo_url
+        self.geo_url = f"{geo_url}rest/"
         self.user = user
         self.pwd = passw
         self.workspace = workspace

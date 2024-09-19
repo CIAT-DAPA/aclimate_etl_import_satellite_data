@@ -58,15 +58,15 @@ class UploadGeoserver():
                         time_intervals = dimension.split(",")
                         
                         # Procesar las fechas
-                        dates = [date.split("T")[0][:-3] for date in time_intervals]
+                        dates = [date.split("T")[0] for date in time_intervals]
                     break
             return dates
         else:
-            print(f"El workspace {self.workspace}, no tiene la capa seleccionada: {layer}")
+            print(f"The workspace {self.workspace}, does not have the layer selected: {layer}")
             return []
     
     except requests.exceptions.RequestException as error:
-        print(f"Error al obtener los rasters disponibles del workspace: {self.workspace}")
+        print(f"Error getting available rasters from workspace: {self.workspace}")
         print(error)
         return []
 
@@ -79,9 +79,9 @@ class UploadGeoserver():
       tmp_path= os.path.join(geoserver_path, "tmp")
       self.tools.create_dir(tmp_path)
       self.tools.create_dir(zip_path)
+      self.tools.create_dir(layer_path)
       
       self.tools.copy_contents(self.output_path, layer_path)
-
       geoserver = GeoserverImport(self.workspace, self.geoserver_user, self.geoserver_pass, self.geoserver_url)
       result = geoserver.connect_geoserver()
       for file in os.listdir(self.output_path):
@@ -89,11 +89,12 @@ class UploadGeoserver():
         shutil.rmtree(file_path)
       shutil.rmtree(tmp_path)
       shutil.rmtree(zip_path)
+      shutil.rmtree(layer_path)
       if not result:
-          print("Error al guardar")
+          print("Error saving")
           return
 
-      print("Se guardo correctamente")
+      print("Rasters were saved successfully")
     except Exception as e:
       print(e)
 
@@ -134,12 +135,13 @@ class UploadGeoserver():
 
     layer_dates = {}
 
-    if len(os.listdir(src)) > 0:
-
+    if len(os.listdir(self.output_path)) > 0:
       for layer in os.listdir(self.output_path):
         layer_dates[layer] = self.get_dates_from_geoserver(layer)
-      
       self.remove_duplicates(layer_dates)
-      self.importGeoserver()
+      if self.tools.has_file(self.output_path):
+        self.importGeoserver()
+      else:
+        print("All files are already on the geoserver")
     else:
       print("There is no data to import")

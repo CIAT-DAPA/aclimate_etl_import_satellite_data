@@ -58,6 +58,12 @@ class Tools():
         s = os.path.join(src, item)
         d = os.path.join(dest, item)
         shutil.copytree(s, d)
+  
+  def has_file(self, directory):
+    for root, dirs, files in os.walk(directory):
+        if files:  # Si hay al menos un archivo en el directorio actual
+            return True
+    return False
 
 
 class Response:
