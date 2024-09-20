@@ -64,6 +64,18 @@ class Tools():
         if files:  # Si hay al menos un archivo en el directorio actual
             return True
     return False
+  
+  def validate_dates(self, start_date_str, end_date_str):
+
+    DATE_FORMAT = "%Y-%m"
+    # Convertir las cadenas a objetos datetime
+    start_date = datetime.strptime(start_date_str, DATE_FORMAT)
+    end_date = datetime.strptime(end_date_str, DATE_FORMAT)
+
+    # Verificar que la fecha de inicio sea menor o igual a la final
+    if start_date > end_date:
+        raise ValueError("La fecha de inicio debe ser menor o igual a la fecha final.")
+
 
 
 class Response:
