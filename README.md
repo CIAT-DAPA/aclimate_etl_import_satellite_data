@@ -67,7 +67,7 @@ pip install -r requirements.txt
 Make sure to set up the following environment variables to connect with your Geoserver instance:
 
 - GEO_USER: Your Geoserver username.
-- EO_PASS: Your Geoserver password.
+- GEO_PASS: Your Geoserver password.
 - GEO_URL: The URL of your Geoserver instance.
 
 ### Execution
