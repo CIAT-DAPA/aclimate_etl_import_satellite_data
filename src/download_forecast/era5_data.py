@@ -7,6 +7,7 @@ import numpy as np
 import xarray as xr
 import rioxarray 
 import cdsapi
+import calendar
 from zipfile import ZipFile
 from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
@@ -18,9 +19,10 @@ from tqdm import tqdm
 
 class Era5Data():
 
-  def __init__(self, output_path, country, start_date, end_date):
+  def __init__(self, output_path, country, start_date, end_date, download_data_path):
      
     self.output_path = output_path
+    self.download_data_path = download_data_path
     self.country = country
     self.start_date = start_date
     self.end_date = end_date
@@ -35,7 +37,7 @@ class Era5Data():
     self.era5_tmin_output_path = os.path.join(self.output_path,"TMIN")
     self.era5_srad_output_path = os.path.join(self.output_path,"SRAD")
 
-    self.downloaded_data_path = os.path.join(self.project_root,"downloadedData")
+    self.downloaded_data_path = os.path.join(self.download_data_path,"downloadedData")
 
     self.era5_path = os.path.join(self.downloaded_data_path,"ERA5")
 
@@ -122,7 +124,8 @@ class Era5Data():
           
           # Recorrer los meses
           for month in months:
-              days = self.generate_days()  # Array con los días '01' a '31'
+              _, num_days_in_month = calendar.monthrange(year, int(month))
+              days = [f"{day:02d}" for day in range(1, num_days_in_month + 1)]  # Días en formato '01', '02', etc.
               
               # Recorrer los días
               for day in days:
