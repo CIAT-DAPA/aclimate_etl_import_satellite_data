@@ -12,9 +12,10 @@ from tools import DownloadProgressBar, Tools
 
 class ChirpsData():
 
-  def __init__(self, output_path, country, start_date, end_date):
+  def __init__(self, output_path, country, start_date, end_date, download_data_path):
      
     self.output_path = output_path
+    self.download_data_path = download_data_path
     self.country = country
     self.start_date = start_date
     self.end_date = end_date
@@ -27,7 +28,7 @@ class ChirpsData():
     self.country_path = os.path.join(self.shapefile_path, self.country)
     self.chirps_output_path = os.path.join(self.output_path,"PREC")
 
-    self.downloaded_data_path = os.path.join(self.project_root,"downloadedData")
+    self.downloaded_data_path = os.path.join(self.download_data_path,"downloadedData")
 
     self.chirps_path = os.path.join(self.downloaded_data_path,"CHIRPS")
 

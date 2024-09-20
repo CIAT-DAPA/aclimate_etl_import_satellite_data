@@ -1,6 +1,7 @@
 import os
 from datetime import datetime, timedelta
 from tqdm import tqdm
+import shutil
 
 class DownloadProgressBar(tqdm):
     def update_to(self, b=1, bsize=1, tsize=None):
@@ -47,3 +48,37 @@ class Tools():
   def create_dir(self, path):
     if not os.path.exists(path):
       os.makedirs(path)
+
+  def copy_contents(self, src, dest):
+    if not os.path.exists(dest):
+        os.makedirs(dest)  # Crea el directorio de destino si no existe
+
+    # Copia todos los archivos y subdirectorios
+    for item in os.listdir(src):
+        s = os.path.join(src, item)
+        d = os.path.join(dest, item)
+        shutil.copytree(s, d)
+  
+  def has_file(self, directory):
+    for root, dirs, files in os.walk(directory):
+        if files:  # Si hay al menos un archivo en el directorio actual
+            return True
+    return False
+  
+  def validate_dates(self, start_date_str, end_date_str):
+
+    DATE_FORMAT = "%Y-%m"
+    # Convertir las cadenas a objetos datetime
+    start_date = datetime.strptime(start_date_str, DATE_FORMAT)
+    end_date = datetime.strptime(end_date_str, DATE_FORMAT)
+
+    # Verificar que la fecha de inicio sea menor o igual a la final
+    if start_date > end_date:
+        raise ValueError("La fecha de inicio debe ser menor o igual a la fecha final.")
+
+
+
+class Response:
+    def __init__(self, res=None, error=None):
+        self.res = res
+        self.error = error
