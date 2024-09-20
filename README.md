@@ -77,12 +77,12 @@ Use the `main.py` script located inside the src/download_process/ directory to s
 Command-line Parameters
 The script accepts several command-line arguments to control the process:
 
-`-o` or `--outputs`: Path where processed data will be saved.
-`-s` or `--startDate`: Start date for downloading data, formatted as YYYY-MM.
-`-e` or `--endDate`: End date for downloading data, formatted as YYYY-MM.
-`-c` or `--country`: Country for which the data is being cut.
-`-d` or `--download`: Path where raw data will be downloaded.
-`-w` or `--workspace`: Geoserver workspace where the data will be uploaded.
+- `-o` or `--outputs`: Path where processed data will be saved.
+- `-s` or `--startDate`: Start date for downloading data, formatted as YYYY-MM.
+- `-e` or `--endDate`: End date for downloading data, formatted as YYYY-MM.
+- `-c` or `--country`: Country for which the data is being cut.
+- `-d` or `--download`: Path where raw data will be downloaded.
+- `-w` or `--workspace`: Geoserver workspace where the data will be uploaded.
 
 ## Usage examples
 
