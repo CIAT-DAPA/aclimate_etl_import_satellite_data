@@ -136,35 +136,37 @@ class Era5Data():
 
       days_array = self.generate_days()
 
-      if not self.check_files_exist(self.get_file_name(v), self.start_date, self.end_date, variable_path, "download"):
-        for year in range(start_year, end_year + 1):
-          # Definir los meses a recorrer según si es el año inicial, intermedio o final
-          months = self.generate_month_range(year, start_year, start_month, end_year, end_month)
+      for year in range(start_year, end_year + 1):
+        # Definir los meses a recorrer según si es el año inicial, intermedio o final
+        months = self.generate_month_range(year, start_year, start_month, end_year, end_month)
 
-          file = os.path.join(variable_path, f"{year}_{v}.zip")
+        for month in months: 
+          if not self.check_files_exist(self.get_file_name(v), f"{year}-{month:02}", f"{year}-{month:02}", variable_path, "download"):
 
-          c = cdsapi.Client(timeout=600)
-          c.retrieve('sis-agrometeorological-indicators',
-              {
-                  'format': 'zip',
-                  'variable': self.enum_variables[v]["name"],
-                  'statistic': self.enum_variables[v]["statistics"],
-                  'year': year,
-                  'month': months,
-                  'day': days_array,
-                  'version': self.cdsapi_version,
-              },
-              file
-          )
-          
-          with ZipFile(file, 'r') as zObject:
-            # Extracting all the members of the zip
-            # into a specific location.
-            zObject.extractall(path=variable_path)
-            print("\tExtracted!")
-          
-          os.remove(file)
-          print("\tZIP file removed:", file)
+            file = os.path.join(variable_path, f"{year}_{month}_{v}.zip")
+
+            c = cdsapi.Client(timeout=600)
+            c.retrieve('sis-agrometeorological-indicators',
+                {
+                    'format': 'zip',
+                    'variable': self.enum_variables[v]["name"],
+                    'statistic': self.enum_variables[v]["statistics"],
+                    'year': year,
+                    'month': [f"{month:02}"],
+                    'day': days_array,
+                    'version': self.cdsapi_version,
+                },
+                file
+            )
+            
+            with ZipFile(file, 'r') as zObject:
+              # Extracting all the members of the zip
+              # into a specific location.
+              zObject.extractall(path=variable_path)
+              print("\tExtracted!")
+            
+            os.remove(file)
+            print("\tZIP file removed:", file)
 
       else:
         print("\tFile already downloaded!")
@@ -218,12 +220,17 @@ class Era5Data():
             
             # Ruta completa del archivo
             file_path = os.path.join(directory, expected_filename)
+            file_path_2 = os.path.join(directory, f"{variable}{self.ERA5_FILE}{date_str}_final-v1.1.1.nc")
             
             # Verificar si el archivo existe
             if not os.path.isfile(file_path):
-              print(f"Missing file: {expected_filename}")
-              return False  # Falta algún archivo
-
+              if (type == "download" and not os.path.isfile(file_path_2)): 
+                print(f"Missing file: {expected_filename}")
+                return False  # Falta algún archivo
+              elif type == "rasters":
+                print(f"Missing file: {expected_filename}")
+                return False  # Falta algún archivo
+              
         # Avanzar al siguiente mes
         if month == 12:
             current_date = datetime(year + 1, 1, 1)
@@ -271,8 +278,13 @@ class Era5Data():
                 # Construir el nombre del archivo NetCDF a partir del año, mes y día
                 nc_file_name = f"{self.get_file_name(variable)}{self.ERA5_FILE}{year}{month}{day}{self.ERA5_FILE_TYPE}"
                 input_file = os.path.join(variable_path, nc_file_name)
+                input_file_2 = os.path.join(variable_path, f"{self.get_file_name(variable)}{self.ERA5_FILE}{year}{month}{day}_final-v1.1.1.nc")
 
-                if os.path.exists(input_file):
+                if os.path.exists(input_file) or os.path.exists(input_file_2):
+
+                  if not os.path.exists(input_file):
+                     input_file = input_file_2
+
                   print(f"\tConverting {input_file} to raster...")
 
                   # Definir el archivo de salida .tif
