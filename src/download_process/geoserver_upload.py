@@ -21,11 +21,14 @@ class UploadGeoserver():
     self.end_date = end_date
     self.workspace = workspace
 
+    self.tmp_output_path = os.path.join(self.output_path, "tmp")
+
     self.geoserver_user = os.getenv('GEO_USER')
     self.geoserver_pass = os.getenv('GEO_PASS')
     self.geoserver_url = os.getenv('GEO_URL')
 
     self.tools = Tools()
+    self.tools.create_dir(self.tmp_output_path)
 
 
 
@@ -81,18 +84,27 @@ class UploadGeoserver():
       self.tools.create_dir(zip_path)
       self.tools.create_dir(layer_path)
       
-      self.tools.copy_contents(self.output_path, layer_path)
+      # Copiar solo las carpetas de TMAX, TMIN, SRAD y PREC
+      target_dirs = ['TMAX', 'TMIN', 'SRAD', 'PREC']
+      
+      for target_dir in target_dirs:
+            src_dir = os.path.join(self.tmp_output_path, target_dir)
+            if os.path.isdir(src_dir):  # Verifica si es un directorio
+                # Copiar la carpeta y su contenido
+                shutil.copytree(src_dir, os.path.join(layer_path, target_dir), dirs_exist_ok=True)
+
       geoserver = GeoserverImport(self.workspace, self.geoserver_user, self.geoserver_pass, self.geoserver_url)
       result = geoserver.connect_geoserver()
-      for file in os.listdir(self.output_path):
-        file_path = os.path.join(self.output_path, file)
-        shutil.rmtree(file_path)
+      for file in os.listdir(self.tmp_output_path):
+       file_path = os.path.join(self.tmp_output_path, file)
+       shutil.rmtree(file_path)
+      shutil.rmtree(self.tmp_output_path)
       shutil.rmtree(tmp_path)
       shutil.rmtree(zip_path)
       shutil.rmtree(layer_path)
       if not result:
-          print("Error saving")
-          return
+         print("Error saving")
+         return
 
       print("Rasters were saved successfully")
     except Exception as e:
@@ -103,7 +115,7 @@ class UploadGeoserver():
     # Iterate over the keys (layers) in the object
     for layer, dates in obj.items():
       # Path to the subfolder corresponding to the layer
-      layer_path = os.path.join(self.output_path, layer)
+      layer_path = os.path.join(self.tmp_output_path, layer)
       
       # Check if the subfolder exists
       if not os.path.exists(layer_path):
@@ -135,13 +147,22 @@ class UploadGeoserver():
 
     layer_dates = {}
 
-    if len(os.listdir(self.output_path)) > 0:
-      for layer in os.listdir(self.output_path):
+    target_dirs = ['TMAX', 'TMIN', 'SRAD', 'PREC']
+      
+    for target_dir in target_dirs:
+      src_dir = os.path.join(self.output_path, target_dir)
+      if os.path.isdir(src_dir):  # Verifica si es un directorio
+        # Copiar la carpeta y su contenido
+        shutil.copytree(src_dir, os.path.join(self.tmp_output_path, target_dir), dirs_exist_ok=True)
+
+    if len(os.listdir(self.tmp_output_path)) > 0:
+      for layer in os.listdir(self.tmp_output_path):
         layer_dates[layer] = self.get_dates_from_geoserver(layer)
       self.remove_duplicates(layer_dates)
-      if self.tools.has_file(self.output_path):
+      if self.tools.has_file(self.tmp_output_path):
         self.importGeoserver()
       else:
+        shutil.rmtree(self.tmp_output_path)
         print("All files are already on the geoserver")
     else:
       print("There is no data to import")
