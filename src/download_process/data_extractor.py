@@ -53,18 +53,25 @@ class DataExtractor:
             t_min_raster = os.path.join(self.output_path, "TMIN", f"TMIN_{date_str}.tif")
             prec_raster = os.path.join(self.output_path, "PREC", f"PREC_{date_str}.tif")
             sol_rad_raster = os.path.join(self.output_path, "SRAD", f"SRAD_{date_str}.tif")
+            
             # Extraer datos de los rasters
             for raster_path in [t_max_raster, t_min_raster, prec_raster, sol_rad_raster]:
               if os.path.exists(raster_path):  # Comprobar si el archivo existe
                 with rasterio.open(raster_path) as src:
                   # Obtener la transformación y la matriz de datos
                   transform = src.transform
+                  top_left_x, top_left_y = transform[2], transform[5]
+                  pixel_size_x = transform[0]  # Tamaño de celda en la dirección X (longitud)
+                  pixel_size_y = -transform[4]
                   row, col = ~transform * (lon, lat)
-
+                  row = round((top_left_y - lat) / pixel_size_y)
+                  col = round((lon - top_left_x) / pixel_size_x)
+                  
                   # Leer el valor en la posición (row, col)
                   value = src.read(1, window=((row, row + 1), (col, col + 1)))
                   value = value[0][0] if value.size > 0 else np.nan
                   # Almacenar los datos en el diccionario
+                  
                   if raster_path == t_max_raster:
                       data['t_max'].append(value)
                   elif raster_path == t_min_raster:
@@ -73,13 +80,15 @@ class DataExtractor:
                       data['prec'].append(value)
                   elif raster_path == sol_rad_raster:
                       data['sol_rad'].append(value)
+              else:
+                 print("File not found: ", raster_path)
             # Agregar la fecha al conjunto de datos
             data['day'].append(day)
             data['month'].append(month)
             data['year'].append(year)
 
-          except (FileNotFoundError, ValueError):
-              continue  # Saltar si el archivo no se encuentra o hay otro error
+          except Exception as e:
+            continue  # Saltar si el archivo no se encuentra o hay otro error
 
     return data
 
