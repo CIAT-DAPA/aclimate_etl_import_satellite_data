@@ -139,34 +139,35 @@ class Era5Data():
       for year in range(start_year, end_year + 1):
         # Definir los meses a recorrer según si es el año inicial, intermedio o final
         months = self.generate_month_range(year, start_year, start_month, end_year, end_month)
-
         for month in months: 
           if not self.check_files_exist(self.get_file_name(v), f"{year}-{month:02}", f"{year}-{month:02}", variable_path, "download"):
-
-            file = os.path.join(variable_path, f"{year}_{month}_{v}.zip")
-
-            c = cdsapi.Client(timeout=600)
-            c.retrieve('sis-agrometeorological-indicators',
-                {
-                    'format': 'zip',
-                    'variable': self.enum_variables[v]["name"],
-                    'statistic': self.enum_variables[v]["statistics"],
-                    'year': year,
-                    'month': [f"{month:02}"],
-                    'day': days_array,
-                    'version': self.cdsapi_version,
-                },
-                file
-            )
-            
-            with ZipFile(file, 'r') as zObject:
-              # Extracting all the members of the zip
-              # into a specific location.
-              zObject.extractall(path=variable_path)
-              print("\tExtracted!")
-            
-            os.remove(file)
-            print("\tZIP file removed:", file)
+            try:
+               
+              file = os.path.join(variable_path, f"{year}_{month}_{v}.zip")
+              c = cdsapi.Client(timeout=600)
+              c.retrieve('sis-agrometeorological-indicators',
+                  {
+                      'format': 'zip',
+                      'variable': self.enum_variables[v]["name"],
+                      'statistic': self.enum_variables[v]["statistics"],
+                      'year': year,
+                      'month': [f"{int(month):02d}"],
+                      'day': days_array,
+                      'version': self.cdsapi_version,
+                  },
+                  file
+              )
+              
+              with ZipFile(file, 'r') as zObject:
+                # Extracting all the members of the zip
+                # into a specific location.
+                zObject.extractall(path=variable_path)
+                print("\tExtracted!")
+              
+              os.remove(file)
+              print("\tZIP file removed:", file)
+            except Exception as e:
+              print(f"Ocurrió un error: {e}")
 
       else:
         print("\tFile already downloaded!")
