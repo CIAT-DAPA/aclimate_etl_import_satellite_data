@@ -270,12 +270,12 @@ class Era5Data():
         variable_path = os.path.join(variable_path, f"{year}")
         self.tools.create_dir(variable_path)
 
-        raster_save_path = os.path.join(raster_save_path, f"{year}")
-        self.tools.create_dir(raster_save_path)
+        raster_save_path_saved = os.path.join(raster_save_path, f"{year}")
+        self.tools.create_dir(raster_save_path_saved)
 
         months = self.generate_month_range(year, start_year, start_month, end_year, end_month)
 
-        if not self.check_files_exist(self.get_variable(variable), self.start_date, self.end_date, raster_save_path, "rasters"):
+        if not self.check_files_exist(self.get_variable(variable), self.start_date, self.end_date, raster_save_path_saved, "rasters"):
 
           # Recorrer los meses
           for month in months:
@@ -296,7 +296,7 @@ class Era5Data():
                   print(f"\tConverting {input_file} to raster...")
 
                   # Definir el archivo de salida .tif
-                  output_file = os.path.join(raster_save_path, f"{self.get_variable(variable)}_{year}{month}{day}.tif")
+                  output_file = os.path.join(raster_save_path_saved, f"{self.get_variable(variable)}_{year}{month}{day}.tif")
 
                   # Leer y procesar el archivo NetCDF
                   xds = xr.open_dataset(input_file)
@@ -371,8 +371,8 @@ class Era5Data():
               month = current_date.month
               _, num_days_in_month = calendar.monthrange(year, month)
 
-              raster_save_path = os.path.join(raster_save_path, f"{year}")
-              self.tools.create_dir(raster_save_path)
+              raster_save_path_saved = os.path.join(raster_save_path, f"{year}")
+              self.tools.create_dir(raster_save_path_saved)
 
               output_rasters_path = os.path.join(output_rasters_path, f"{year}")
               self.tools.create_dir(output_rasters_path)
@@ -383,7 +383,7 @@ class Era5Data():
 
                   # Buscar archivos .tif correspondientes a esta fecha
                   raster_file = f"{self.get_variable(variable)}_{date_str}.tif"
-                  raster_path = os.path.join(raster_save_path, raster_file)
+                  raster_path = os.path.join(raster_save_path_saved, raster_file)
 
                   # Verificar si el archivo existe
                   if os.path.isfile(raster_path):
