@@ -33,29 +33,25 @@ class Era5Data():
     self.project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
     self.shapefile_path = os.path.join(self.project_root,"shapefiles")
     self.country_path = os.path.join(self.shapefile_path, self.country)
-    self.era5_tmax_output_path = os.path.join(self.output_path,"TMAX")
-    self.era5_tmin_output_path = os.path.join(self.output_path,"TMIN")
-    self.era5_srad_output_path = os.path.join(self.output_path,"SRAD")
+    self.era5_tmax_output_path = os.path.join(self.output_path, "2m_Maximum Temperature")
+    self.era5_tmin_output_path = os.path.join(self.output_path, "2m_Minimum Temperature")
+    self.era5_srad_output_path = os.path.join(self.output_path, "Solar Radiation")
 
-    self.downloaded_data_path = os.path.join(self.download_data_path,"downloadedData")
 
-    self.era5_path = os.path.join(self.downloaded_data_path,"ERA5")
-    self.era5_rasters_path = os.path.join(self.era5_path,"rasters")
+    self.era5_rasters_path = os.path.join(self.download_data_path,"rasters")
 
-    self.tmax_path = os.path.join(self.era5_path,"TMAX")
-    self.tmin_path = os.path.join(self.era5_path,"TMIN")
-    self.srad_path = os.path.join(self.era5_path,"SRAD")
+    self.tmax_path = os.path.join(self.download_data_path, "2m_Maximum Temperature")
+    self.tmin_path = os.path.join(self.download_data_path, "2m_Minimum Temperature")
+    self.srad_path = os.path.join(self.download_data_path, "Solar Radiation")
 
-    self.tmax_rasters_path = os.path.join(self.era5_rasters_path,"TMAX")
-    self.tmin_rasters_path = os.path.join(self.era5_rasters_path,"TMIN")
-    self.srad_rasters_path = os.path.join(self.era5_rasters_path,"SRAD")
+    self.tmax_rasters_path = os.path.join(self.era5_rasters_path, "2m_Maximum Temperature")
+    self.tmin_rasters_path = os.path.join(self.era5_rasters_path, "2m_Minimum Temperature")
+    self.srad_rasters_path = os.path.join(self.era5_rasters_path, "Solar Radiation")
 
-    self.tmax_output_path = os.path.join(self.output_path,"TMAX")
-    self.tmin_output_path = os.path.join(self.output_path,"TMIN")
-    self.srad_output_path = os.path.join(self.output_path,"SRAD")
+    self.tmax_output_path = os.path.join(self.output_path, "2m_Maximum Temperature")
+    self.tmin_output_path = os.path.join(self.output_path, "2m_Minimum Temperature")
+    self.srad_output_path = os.path.join(self.output_path, "Solar Radiation")
 
-    self.tools.create_dir(self.downloaded_data_path)
-    self.tools.create_dir(self.era5_path)
     self.tools.create_dir(self.tmax_path)
     self.tools.create_dir(self.tmin_path)
     self.tools.create_dir(self.srad_path)
@@ -84,6 +80,7 @@ class Era5Data():
                                 "transform":"/",
                                 "value":1000000}
                     }
+    
 
     pass
 
@@ -107,11 +104,11 @@ class Era5Data():
 
   def get_variable(self, variable):
     if variable == "t_max":
-      return "TMAX"
+      return "2m_Maximum Temperature"
     elif variable == "t_min":
-      return "TMIN"
+      return "2m_Minimum Temperature"
     elif variable == "sol_rad":
-      return "SRAD"
+      return "Solar Radiation"
   
   def get_file_name(self, variable):
     if variable == "t_max":
@@ -120,6 +117,7 @@ class Era5Data():
       return "Temperature-Air-2m-Min-24h"
     elif variable == "sol_rad":
       return "Solar-Radiation-Flux"
+    
 
   def download_era5_data(self, variables=["t_max","t_min","sol_rad"]):
     
@@ -132,12 +130,14 @@ class Era5Data():
     for v in variables:
       print("\tProcesing",v)
 
-      variable_path = os.path.join(self.era5_path, self.get_variable(v))
+      variable_path = os.path.join(self.download_data_path, self.get_variable(v))
 
       days_array = self.generate_days()
 
       for year in range(start_year, end_year + 1):
         # Definir los meses a recorrer según si es el año inicial, intermedio o final
+        variable_path = os.path.join(variable_path, f"{year}")
+        self.tools.create_dir(variable_path)
         months = self.generate_month_range(year, start_year, start_month, end_year, end_month)
         for month in months: 
           if not self.check_files_exist(self.get_file_name(v), f"{year}-{month:02}", f"{year}-{month:02}", variable_path, "download"):
@@ -263,12 +263,19 @@ class Era5Data():
       self.tools.create_dir(raster_save_path)
 
       # Ruta donde se almacenan los NetCDFs de la variable
-      variable_path = os.path.join(self.era5_path, self.get_variable(variable))
+      variable_path = os.path.join(self.download_data_path, self.get_variable(variable))
 
-      if not self.check_files_exist(self.get_variable(variable), self.start_date, self.end_date, raster_save_path, "rasters"):
-      
-        for year in range(start_year, end_year + 1):
-          months = self.generate_month_range(year, start_year, start_month, end_year, end_month)
+      for year in range(start_year, end_year + 1):
+
+        variable_path = os.path.join(variable_path, f"{year}")
+        self.tools.create_dir(variable_path)
+
+        raster_save_path = os.path.join(raster_save_path, f"{year}")
+        self.tools.create_dir(raster_save_path)
+
+        months = self.generate_month_range(year, start_year, start_month, end_year, end_month)
+
+        if not self.check_files_exist(self.get_variable(variable), self.start_date, self.end_date, raster_save_path, "rasters"):
 
           # Recorrer los meses
           for month in months:
@@ -284,7 +291,7 @@ class Era5Data():
                 if os.path.exists(input_file) or os.path.exists(input_file_2):
 
                   if not os.path.exists(input_file):
-                     input_file = input_file_2
+                    input_file = input_file_2
 
                   print(f"\tConverting {input_file} to raster...")
 
@@ -311,10 +318,11 @@ class Era5Data():
                 else:
                   print(f"\tFile not found: {input_file}")
 
-        print("\nConversion complete: ", variable)
-
-      else:
+        else:
          print(f"\nThe rasters of the variable {variable} are already found") 
+
+      print("\nConversion complete: ", variable)
+
 
   def cut_rasters(self, save_path):
       """
@@ -362,6 +370,12 @@ class Era5Data():
               year = current_date.year
               month = current_date.month
               _, num_days_in_month = calendar.monthrange(year, month)
+
+              raster_save_path = os.path.join(raster_save_path, f"{year}")
+              self.tools.create_dir(raster_save_path)
+
+              output_rasters_path = os.path.join(output_rasters_path, f"{year}")
+              self.tools.create_dir(output_rasters_path)
               
               # Recorrer los días del mes
               for day in range(1, num_days_in_month + 1):
@@ -428,3 +442,4 @@ class Era5Data():
     self.download_era5_data()
     self.netcdf_to_raster(self.era5_rasters_path)
     self.cut_rasters(self.output_path)
+

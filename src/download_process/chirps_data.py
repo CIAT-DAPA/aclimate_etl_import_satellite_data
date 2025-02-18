@@ -26,18 +26,14 @@ class ChirpsData():
     self.project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
     self.shapefile_path = os.path.join(self.project_root,"shapefiles")
     self.country_path = os.path.join(self.shapefile_path, self.country)
-    self.chirps_output_path = os.path.join(self.output_path,"PREC")
-
-    self.downloaded_data_path = os.path.join(self.download_data_path,"downloadedData")
-
-    self.chirps_path = os.path.join(self.downloaded_data_path,"CHIRPS")
-
-    self.prec_path = os.path.join(self.chirps_path,"PREC")
+    self.chirps_output_path = os.path.join(self.output_path,"CHIRPS")
 
 
-    self.tools.create_dir(self.downloaded_data_path)
+    self.chirps_path = os.path.join(self.download_data_path,"CHIRPS")
+
+
+
     self.tools.create_dir(self.chirps_path)
-    self.tools.create_dir(self.prec_path)
     self.tools.create_dir(self.chirps_output_path)
 
     self.CHIRPS_URL = "https://data.chc.ucsb.edu/products/CHIRPS-2.0/global_daily/tifs/p05/year"
@@ -61,16 +57,29 @@ class ChirpsData():
         print("\tFile already downloaded!",path)
 
   def downloadData(self):
-      
+    # Generar las fechas en el rango dado
     dates = self.tools.generate_dates(self.start_date, self.end_date)
 
-    urls = [f"{self.CHIRPS_URL.replace('year', date.split('-')[0])}/{self.CHIRPS_FILE.replace('date',date.replace('-','.'))}" for date in dates]
+    # Crear URLs y nombres de archivos
+    urls = [f"{self.CHIRPS_URL.replace('year', date.split('-')[0])}/{self.CHIRPS_FILE.replace('date', date.replace('-', '.'))}" for date in dates]
     files = [os.path.basename(url) for url in urls]
-    save_path_chirp_all = [os.path.join(self.prec_path, file) for file in files]
 
-    # Download in parallel
+    # Crear carpetas por año y generar rutas de guardado
+    save_path_chirp_all = []
+    for date, file in zip(dates, files):
+        year = date.split('-')[0]  # Obtener el año de la fecha
+        year_path = os.path.join(self.chirps_path, year)  # Ruta de la carpeta del año
+
+        # Crear la carpeta del año si no existe
+        self.tools.create_dir(year_path)
+
+        # Ruta completa del archivo
+        save_path = os.path.join(year_path, file)
+        save_path_chirp_all.append(save_path)
+
+    # Descargar en paralelo
     with ThreadPoolExecutor(max_workers=self.cores) as executor:
-      executor.map(self.download_file, urls, save_path_chirp_all)
+        executor.map(self.download_file, urls, save_path_chirp_all)
 
     return save_path_chirp_all
       
@@ -117,13 +126,20 @@ class ChirpsData():
 
         # Guardar el raster recortado
 
-        raster_cut = os.path.join(self.chirps_output_path, os.path.basename(raster_path).replace("chirps-v2.0.", "PREC_"))
+        year = os.path.basename(raster_path).split(".")[2]
+        year_path = os.path.join(self.chirps_output_path, year)
+        self.tools.create_dir(year_path)
+
+        # Construir el nombre del archivo de salida
+        raster_cut = os.path.join(year_path, os.path.basename(raster_path).replace("chirps-v2.0.", "Precipitation_"))
         name, extension = os.path.basename(raster_cut).rsplit(".", 1)
         name = name.replace(".", "")
         new_file_name = f"{name}.{extension}"
+        output_file = raster_cut.replace(os.path.basename(raster_cut), new_file_name)
 
-        with rasterio.open(raster_cut.replace(os.path.basename(raster_cut), new_file_name), "w", **out_meta) as dest:
-          dest.write(out_image)
+        # Guardar el raster recortado
+        with rasterio.open(output_file, "w", **out_meta) as dest:
+            dest.write(out_image)
 
 
 

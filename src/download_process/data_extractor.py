@@ -11,6 +11,11 @@ class DataExtractor:
     self.start_date = start_date
     self.end_date = end_date
 
+    self.tmax_path = os.path.join(self.output_path, "2m_Maximum Temperature")
+    self.tmin_path = os.path.join(self.output_path, "2m_Minimum Temperature")
+    self.srad_path = os.path.join(self.output_path, "Solar Radiation")
+    self.prec_path = os.path.join(self.output_path, "CHIRPS")
+
   def read_coordinates(self):
     # Leer el CSV con las coordenadas
     coords_df = pd.read_csv(self.csv_path)
@@ -49,10 +54,10 @@ class DataExtractor:
             date_str = f"{year}{month:02d}{day:02d}"  # Formato YYYYMMDD
 
             # Definir las rutas de los rasters dentro de las carpetas correspondientes
-            t_max_raster = os.path.join(self.output_path, "TMAX", f"TMAX_{date_str}.tif")
-            t_min_raster = os.path.join(self.output_path, "TMIN", f"TMIN_{date_str}.tif")
-            prec_raster = os.path.join(self.output_path, "PREC", f"PREC_{date_str}.tif")
-            sol_rad_raster = os.path.join(self.output_path, "SRAD", f"SRAD_{date_str}.tif")
+            t_max_raster = os.path.join(self.tmax_path, f"{year}", f"2m_Maximum Temperature_{date_str}.tif")
+            t_min_raster = os.path.join(self.tmin_path, f"{year}", f"2m_Minimum Temperature_{date_str}.tif")
+            prec_raster = os.path.join(self.prec_path, f"{year}", f"Precipitation_{date_str}.tif")
+            sol_rad_raster = os.path.join(self.srad_path, f"{year}", f"Solar Radiation_{date_str}.tif")
             
             # Extraer datos de los rasters
             for raster_path in [t_max_raster, t_min_raster, prec_raster, sol_rad_raster]:

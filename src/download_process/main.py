@@ -41,14 +41,16 @@ def main():
 
     input_csv = args.input_csv
 
+
     tools = Tools()
     tools.validate_dates(start_date, end_date)
 
+             
     cd = ChirpsData(output_path, country, start_date, end_date, download_path)
-    cd.main()
+    #cd.main()
 
     e5 = Era5Data(output_path, country, start_date, end_date, download_path)
-    e5.main()
+    #e5.main()
 
     if input_csv:
       extractor = DataExtractor(output_path, input_csv, start_date, end_date)
@@ -68,3 +70,4 @@ if __name__ == "__main__":
 
 
 #python src\download_process\main.py -o "D:\Code\download_satellite_data\output" -s "2024-05" -e "2024-05" -c "NICARAGUA" -d "D:\Code\download_satellite_data\downloadedData" -w test
+#python src\download_process\main.py -o "D:\Code\download_satellite_data\output" -s "2024-05" -e "2024-05" -c "NICARAGUA" -d "D:\Code\download_satellite_data\downloadedData"

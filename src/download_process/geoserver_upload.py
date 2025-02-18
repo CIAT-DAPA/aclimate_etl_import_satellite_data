@@ -103,8 +103,8 @@ class UploadGeoserver():
       shutil.rmtree(zip_path)
       shutil.rmtree(layer_path)
       if not result:
-         print("Error saving")
-         return
+        print("Error saving")
+        return
 
       print("Rasters were saved successfully")
     except Exception as e:
@@ -144,25 +144,46 @@ class UploadGeoserver():
 
 
   def main(self):
-
     layer_dates = {}
 
-    target_dirs = ['TMAX', 'TMIN', 'SRAD', 'PREC']
-      
-    for target_dir in target_dirs:
-      src_dir = os.path.join(self.output_path, target_dir)
-      if os.path.isdir(src_dir):  # Verifica si es un directorio
-        # Copiar la carpeta y su contenido
-        shutil.copytree(src_dir, os.path.join(self.tmp_output_path, target_dir), dirs_exist_ok=True)
+    # Mapeo de nombres originales a carpetas de destino
+    name_mapping = {
+        '2m_Maximum Temperature': 'TMAX',
+        '2m_Minimum Temperature': 'TMIN',
+        'Solar Radiation': 'SRAD',
+        'Precipitation': 'PREC'
+    }
 
+    dir_names = ['2m_Maximum Temperature', '2m_Minimum Temperature', 'Solar Radiation', 'CHIRPS']
+
+    # Crear directorios destino una sola vez
+    for target_dir in name_mapping.values():
+        dest_dir = os.path.join(self.tmp_output_path, target_dir)
+        os.makedirs(dest_dir, exist_ok=True)
+
+    # Recorrer las carpetas de salida UNA VEZ
+    for dir in dir_names:
+      path = os.path.join(self.output_path, dir)
+      for root, dirs, files in os.walk(path):
+          for file in files:
+              print(f"Revisando archivo: {file}")
+              for original_name, target_dir in name_mapping.items():
+                  if original_name in file:
+                      # Copiar archivo al directorio correspondiente
+                      src_file = os.path.join(root, file)
+                      dest_dir = os.path.join(self.tmp_output_path, target_dir)
+                      shutil.copy2(src_file, dest_dir)
+                      print(f"Copiado: {file} -> {dest_dir}")
+                      break  # Sale del ciclo interno para evitar copias duplicadas
+    # Verificar si hay datos para importar
     if len(os.listdir(self.tmp_output_path)) > 0:
-      for layer in os.listdir(self.tmp_output_path):
-        layer_dates[layer] = self.get_dates_from_geoserver(layer)
-      self.remove_duplicates(layer_dates)
-      if self.tools.has_file(self.tmp_output_path):
-        self.importGeoserver()
-      else:
-        shutil.rmtree(self.tmp_output_path)
-        print("All files are already on the geoserver")
+        for layer in os.listdir(self.tmp_output_path):
+            layer_dates[layer] = self.get_dates_from_geoserver(layer)
+        self.remove_duplicates(layer_dates)
+        if self.tools.has_file(self.tmp_output_path):
+            self.importGeoserver()
+        else:
+            shutil.rmtree(self.tmp_output_path)
+            print("All files are already on the geoserver")
     else:
-      print("There is no data to import")
+        print("There is no data to import")
