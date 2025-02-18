@@ -374,8 +374,8 @@ class Era5Data():
               raster_save_path_saved = os.path.join(raster_save_path, f"{year}")
               self.tools.create_dir(raster_save_path_saved)
 
-              output_rasters_path = os.path.join(output_rasters_path, f"{year}")
-              self.tools.create_dir(output_rasters_path)
+              output_rasters_path_saved = os.path.join(output_rasters_path, f"{year}")
+              self.tools.create_dir(output_rasters_path_saved)
               
               # Recorrer los días del mes
               for day in range(1, num_days_in_month + 1):
@@ -419,7 +419,7 @@ class Era5Data():
                           })
 
                           # Definir el archivo de salida recortado en la carpeta de salida
-                          raster_cut_path = os.path.join(output_rasters_path, f"{raster_file}")
+                          raster_cut_path = os.path.join(output_rasters_path_saved, f"{raster_file}")
 
                           # Guardar el raster recortado
                           with rasterio.open(raster_cut_path, "w", **out_meta) as dest:
