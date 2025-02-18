@@ -47,10 +47,10 @@ def main():
 
              
     cd = ChirpsData(output_path, country, start_date, end_date, download_path)
-    #cd.main()
+    cd.main()
 
     e5 = Era5Data(output_path, country, start_date, end_date, download_path)
-    #e5.main()
+    e5.main()
 
     if input_csv:
       extractor = DataExtractor(output_path, input_csv, start_date, end_date)

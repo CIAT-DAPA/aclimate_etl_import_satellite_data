@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import rasterio
 import calendar
+from tools import Tools
 
 class DataExtractor:
   def __init__(self, output_path, csv_path, start_date, end_date):
@@ -10,6 +11,7 @@ class DataExtractor:
     self.csv_path = csv_path
     self.start_date = start_date
     self.end_date = end_date
+    self.tools = Tools()
 
     self.tmax_path = os.path.join(self.output_path, "2m_Maximum Temperature")
     self.tmin_path = os.path.join(self.output_path, "2m_Minimum Temperature")
@@ -100,7 +102,9 @@ class DataExtractor:
   def save_to_csv(self, id, data):
     # Crear un DataFrame y guardar como CSV
     df = pd.DataFrame(data)
-    output_csv = os.path.join(self.output_path, f"{id}_daily.csv")
+    paht_to_save = os.path.join(self.output_path, "csv")
+    self.tools.create_dir(paht_to_save)
+    output_csv = os.path.join(paht_to_save, f"{id}_daily.csv")
     df.to_csv(output_csv, index=False)
     print(f"Saved data for ID {id} to {output_csv}")
 
